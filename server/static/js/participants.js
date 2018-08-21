@@ -32,7 +32,7 @@ function Participant(name, type, player) {
 	this.player = player;
 
 	var container = document.createElement('div');
-	container.className = (isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS) + " " + "participant-player";
+	container.className = isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS;
 	container.id = name;
 	var span = document.createElement('span');
 	var video = document.createElement('video');
@@ -41,7 +41,8 @@ function Participant(name, type, player) {
 	container.appendChild(video);
 	container.appendChild(span);
 	container.onclick = switchContainerClass;
-	document.getElementById('participants').appendChild(container);
+
+	document.getElementById("participant-" + this.player) && document.getElementById("participant-" + this.player).appendChild(container);
 
 	span.appendChild(document.createTextNode(player + ":" + name));
 

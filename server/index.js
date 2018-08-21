@@ -115,8 +115,35 @@ function joinRoom(socket, message, callback) {
             callback(error);
             return;
         }
+
+        const playerTypes = ["awayplayer", "home"];
+        console.log(message.player)
+        if (!~playerTypes.findIndex((a) => a === message.player)) {
+            socket.emit('message', {
+                id: "error",
+                errorMessage: "Unrecognized player type" 
+            });
+            return
+        }
+
+        if (~Object.values(room.participants).findIndex((a) => a.player === message.player)) {
+            socket.emit('message', {
+                id: "error",
+                errorMessage: message.player + " already here" 
+            });
+            return
+        }
+
+        if (~Object.values(room.participants).findIndex((a) => a.name === message.name)) {
+            socket.emit('message', {
+                id: "error",
+                errorMessage: message.name + " already here" 
+            });
+            return
+        }
+
         // join user to room
-        join(socket, room, message.name, message.participantType, (err, user) => {
+        join(socket, room, message.name, message.participantType, message.player, (err, user) => {
             console.log(`join success : ${user.name}`);
             if (err) {
                 callback(err);
@@ -173,10 +200,10 @@ function getRoom(roomName, callback) {
  * @param {*} userName 
  * @param {*} callback 
  */
-function join(socket, room, userName, participantType, callback) {
+function join(socket, room, userName, participantType, player, callback) {
 
     // add user to session
-    let userSession = new Session(socket, userName, room.name, participantType);
+    let userSession = new Session(socket, userName, room.name, participantType, player);
 
     // register
     userRegister.register(userSession);
@@ -230,7 +257,8 @@ function join(socket, room, userName, participantType, callback) {
                 usersInRoom[i].sendMessage({
                     id: 'newParticipantArrived',
                     name: userSession.name,
-                    participantType: userSession.participantType
+                    participantType: userSession.participantType,
+                    player: userSession.player
                 });
             }
         }
@@ -241,7 +269,11 @@ function join(socket, room, userName, participantType, callback) {
         let existingUsers = [];
         for (let i in usersInRoom) {
             if (usersInRoom[i].name != userSession.name) {
-                existingUsers.push(usersInRoom[i].name);
+                existingUsers.push({
+                    name: usersInRoom[i].name,
+                    player: usersInRoom[i].player,
+                    participantType: usersInRoom[i].participantType
+                });
             }
         }
         userSession.sendMessage({
@@ -268,7 +300,6 @@ function join(socket, room, userName, participantType, callback) {
 function receiveVideoFrom(socket, senderName, sdpOffer, callback) {
     let userSession = userRegister.getById(socket.id);
     let sender = userRegister.getByName(senderName);
-
 
     getEndpointForUser(userSession, sender, (error, endpoint) => {
         if (error) {

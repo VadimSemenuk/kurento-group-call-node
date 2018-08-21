@@ -10,7 +10,7 @@ export default class Session {
      * 
      * @param {object} socket    Socket
      */
-    constructor(socket, userName, roomName, participantType) {
+    constructor(socket, userName, roomName, participantType, player) {
         this.id = socket.id;
         this.socket = socket;
         this.name = userName;
@@ -19,6 +19,7 @@ export default class Session {
         this.incomingMedia = {};
         this.iceCandidateQueue = {};
         this.participantType = participantType;
+        this.player = player;
     }
 
     /**

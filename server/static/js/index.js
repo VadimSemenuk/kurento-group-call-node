@@ -23,7 +23,7 @@ var participantType = getCookie("participantType");
 var participantName = participantType === "player" ? getCookie("playerName") : guid();
 var player = getCookie("player");
 
-register(gameId, participantType, participantName);
+register(gameId, participantType, participantName, player);
 
 window.onbeforeunload = function () {
 	socket.disconnect();
@@ -57,17 +57,21 @@ socket.on('message', parsedMessage => {
 				}
 			});
 			break;
+		case 'error':
+			alert(parsedMessage.errorMessage);
+			break;
 		default:
 			console.error('Unrecognized message', parsedMessage);
 	}
 });
 
-function register(gameId, participantType, participantName) {
+function register(gameId, participantType, participantName, player) {
 	var message = {
 		id: 'joinRoom',
 		name: participantName,
 		roomName: gameId,
 		participantType: participantType,
+		player: player
 	}
 
 	sendMessage(message);
@@ -75,9 +79,9 @@ function register(gameId, participantType, participantName) {
 
 function onNewParticipant(request) {
 	if (request.participantType === "spectator") {
-		alert("new spectator arrived");
+		// alert("new spectator arrived");
 	} else {
-		receiveVideo(request.name);
+		receiveVideo(request);
 	}
 }
 
@@ -102,7 +106,7 @@ function onExistingParticipants(msg) {
 	console.log("onExistingParticipants", msg);
 
 	if (participantType === "spectator") {
-		msg.data.forEach(receiveVideo);
+		msg.data.filter((a) => a.participantType === "player").forEach(receiveVideo);
 		return
 	}
 
@@ -135,7 +139,7 @@ function onExistingParticipants(msg) {
 			this.generateOffer(participant.offerToReceiveVideo.bind(participant));
 		});
 
-	msg.data.forEach(receiveVideo);
+	msg.data.filter((a) => a.participantType === "player").forEach(receiveVideo);
 }
 
 function leaveRoom() {
@@ -154,8 +158,10 @@ function leaveRoom() {
 }
 
 function receiveVideo(sender) {
-	var participant = new Participant(sender, participantType, player);
-	participants[sender] = participant;
+	console.log("receiveVideoSENDER", sender);
+
+	var participant = new Participant(sender.name, sender.participantType, sender.player);
+	participants[sender.name] = participant;
 	var video = participant.getVideoElement();
 
 	var options = {
