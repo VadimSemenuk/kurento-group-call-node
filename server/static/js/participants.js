@@ -26,10 +26,13 @@ const PARTICIPANT_CLASS = 'participant';
  *                        The tag of the new element will be 'video<name>'
  * @return
  */
-function Participant(name) {
+function Participant(name, type, player) {
 	this.name = name;
+	this.type = type;
+	this.player = player;
+
 	var container = document.createElement('div');
-	container.className = isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS;
+	container.className = (isPresentMainParticipant() ? PARTICIPANT_CLASS : PARTICIPANT_MAIN_CLASS) + " " + "participant-player";
 	container.id = name;
 	var span = document.createElement('span');
 	var video = document.createElement('video');
@@ -40,7 +43,7 @@ function Participant(name) {
 	container.onclick = switchContainerClass;
 	document.getElementById('participants').appendChild(container);
 
-	span.appendChild(document.createTextNode(name));
+	span.appendChild(document.createTextNode(player + ":" + name));
 
 	video.id = 'video-' + name;
 	video.autoplay = true;

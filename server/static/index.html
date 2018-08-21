@@ -5,32 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Kurento Group Call Node</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 
 <body>
 
 	<div id="container">
 		<div id="wrapper">
-			<div id="join" class="animate join">
-				<h1>Join a Room</h1>
-				<form onsubmit="register(); return false;" accept-charset="UTF-8">
-					<p>
-						<input type="text" name="name" value="" id="name"
-							placeholder="Username" required>
-					</p>
-					<p>
-						<input type="text" name="room" value="" id="roomName"
-							placeholder="Room" required>
-					</p>
-					<p class="submit">
-						<input type="submit" name="commit" value="Join!">
-					</p>
-					<input type="checkbox" id="isSpectator">
-					<label for="isSpectator">Is spectator</label>
-				</form>
-			</div>
-			<div id="room" style="display: none;">
+			<div id="room">
 				<h2 id="room-header"></h2>
 				<div id="participants"></div>
 				<input type="button" id="button-leave" onmouseup="leaveRoom();"
@@ -39,11 +21,28 @@
 		</div>
 	</div>
 
-	<script src="./bower_components/socket.io-client/dist/socket.io.js"></script>
-    <script src="./bower_components/adapter.js/adapter.js"></script>
-    <script src="./bower_components/kurento-utils/js/kurento-utils.min.js"></script>
-    <script src="./js/index.js"></script>
-	<script src="./js/participants.js"></script>
+	<script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
+    <script src="/bower_components/adapter.js/adapter.js"></script>
+    <script src="/bower_components/kurento-utils/js/kurento-utils.min.js"></script>
+	<script>
+		function getCookie(name) {
+			var matches = document.cookie.match(new RegExp(
+				"(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+			));
+			return matches ? decodeURIComponent(matches[1]) : undefined;
+		}
+
+		function guid() {
+			function s4() {
+				return Math.floor((1 + Math.random()) * 0x10000)
+				.toString(16)
+				.substring(1);
+			}
+			return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+		}
+	</script>
+	<script src="/js/index.js"></script>
+	<script src="/js/participants.js"></script>
     
 
 </body>

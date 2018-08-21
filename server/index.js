@@ -116,7 +116,7 @@ function joinRoom(socket, message, callback) {
             return;
         }
         // join user to room
-        join(socket, room, message.name, message.isSpectator, (err, user) => {
+        join(socket, room, message.name, message.participantType, (err, user) => {
             console.log(`join success : ${user.name}`);
             if (err) {
                 callback(err);
@@ -173,10 +173,10 @@ function getRoom(roomName, callback) {
  * @param {*} userName 
  * @param {*} callback 
  */
-function join(socket, room, userName, isSpectator, callback) {
+function join(socket, room, userName, participantType, callback) {
 
     // add user to session
-    let userSession = new Session(socket, userName, room.name, isSpectator);
+    let userSession = new Session(socket, userName, room.name, participantType);
 
     // register
     userRegister.register(userSession);
@@ -230,7 +230,7 @@ function join(socket, room, userName, isSpectator, callback) {
                 usersInRoom[i].sendMessage({
                     id: 'newParticipantArrived',
                     name: userSession.name,
-                    isSpectator: userSession.isSpectator
+                    participantType: userSession.participantType
                 });
             }
         }
@@ -466,5 +466,23 @@ function getEndpointForUser(userSession, sender, callback) {
     }
 }
 
+const bodyParser = require('body-parser');
+const _public = path.join(__dirname, 'static');
 
-app.use("/game/spectator", express.static(path.join(__dirname, 'static')));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.get('/game/spectator/:gameId', function(req, res) {
+    res.cookie("gameId", req.params.gameId);
+    res.cookie("participantType", "spectator");
+    res.sendFile(path.join(_public, 'index.html'));
+});
+app.get('/game/player/:gameId', function(req, res) {
+    res.cookie("gameId", req.params.gameId);
+    res.cookie("player", req.query.player);
+    res.cookie("playerName", req.query.playername);
+    res.cookie("participantType", "player");
+    res.sendFile(path.join(_public, 'index.html'));
+});
+
+app.use(express.static(_public));

@@ -17,8 +17,13 @@
 
 var socket = io('https://' + location.host);
 var participants = {};
-var name;
-var isSpectator;
+
+var gameId = getCookie("gameId");
+var participantType = getCookie("participantType");
+var participantName = participantType === "player" ? getCookie("playerName") : guid();
+var player = getCookie("player");
+
+register(gameId, participantType, participantName);
 
 window.onbeforeunload = function () {
 	socket.disconnect();
@@ -57,31 +62,19 @@ socket.on('message', parsedMessage => {
 	}
 });
 
-function register() {
-	name = document.getElementById('name').value;
-	var roomName = document.getElementById('roomName').value;
-
-	isSpectator = false;
-	if (document.getElementById('isSpectator').checked) {
-		isSpectator = true;
-	}
-	console.log("isSpectator", isSpectator)
-
-	document.getElementById('room-header').innerText = 'ROOM ' + roomName;
-	document.getElementById('join').style.display = 'none';
-	document.getElementById('room').style.display = 'block';
-
+function register(gameId, participantType, participantName) {
 	var message = {
 		id: 'joinRoom',
-		name: name,
-		roomName: roomName,
-		isSpectator: isSpectator,
+		name: participantName,
+		roomName: gameId,
+		participantType: participantType,
 	}
+
 	sendMessage(message);
 }
 
 function onNewParticipant(request) {
-	if (request.isSpectator) {
+	if (request.participantType === "spectator") {
 		alert("new spectator arrived");
 	} else {
 		receiveVideo(request.name);
@@ -106,7 +99,9 @@ function callResponse(message) {
 }
 
 function onExistingParticipants(msg) {
-	if (isSpectator) {
+	console.log("onExistingParticipants", msg);
+
+	if (participantType === "spectator") {
 		msg.data.forEach(receiveVideo);
 		return
 	}
@@ -121,9 +116,9 @@ function onExistingParticipants(msg) {
 			}
 		}
 	};
-	console.log(name + " registered in room " + room);
-	var participant = new Participant(name);
-	participants[name] = participant;
+	console.log(participantName + " registered in room " + room);
+	var participant = new Participant(participantName, participantType, player);
+	participants[participantName] = participant;
 	var video = participant.getVideoElement();
 
 	var options = {
@@ -131,26 +126,14 @@ function onExistingParticipants(msg) {
 		mediaConstraints: constraints,
 		onicecandidate: participant.onIceCandidate.bind(participant)
 	}
-	// if (isSpectator) {
-		// participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
-		// 	function (error) {
-		// 		if (error) {
-		// 			return console.error(error);
-		// 		}
-		// 		this.generateOffer(participant.offerToReceiveVideo.bind(participant));
-		// 	});
 
-	// } else {
-		participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
-			function (error) {
-				if (error) {
-					return console.error(error);
-				}
-				this.generateOffer(participant.offerToReceiveVideo.bind(participant));
-			});
-	// }
-
-	console.log(msg);
+	participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+		function (error) {
+			if (error) {
+				return console.error(error);
+			}
+			this.generateOffer(participant.offerToReceiveVideo.bind(participant));
+		});
 
 	msg.data.forEach(receiveVideo);
 }
@@ -171,7 +154,7 @@ function leaveRoom() {
 }
 
 function receiveVideo(sender) {
-	var participant = new Participant(sender);
+	var participant = new Participant(sender, participantType, player);
 	participants[sender] = participant;
 	var video = participant.getVideoElement();
 
