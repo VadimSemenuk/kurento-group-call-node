@@ -6,7 +6,7 @@
   "author": "chapin",
   "license": "MIT",
   "scripts": {
-    "get": "npm install && npm install -g bower && cd ./server/static && bower install"
+    "get": "npm install && cd ./server/static && bower install --allow-root"
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
@@ -14,12 +14,9 @@
     "babel-preset-stage-3": "^6.22.0",
     "babel-register": "^6.23.0",
     "body-parser": "^1.18.3",
-    "cookie": "^0.3.1",
     "express": "^4.15.0",
-    "express-session": "^1.15.6",
     "kurento-client": "6.6.0",
     "minimist": "^1.2.0",
-    "socket.io": "^2.0.3",
-    "url": "^0.11.0"
+    "socket.io": "^2.0.3"
   }
 }
