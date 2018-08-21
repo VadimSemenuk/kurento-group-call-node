@@ -47,7 +47,8 @@ let server = https.createServer(options, app).listen(port, () => {
 
 /////////////////////////// websocket ///////////////////////////////
 
-let io = socketIO(server).path('/groupcall');
+let io = socketIO(server);
+// let io = socketIO(server).path('/groupcall');
 let wsUrl = url.parse(argv.ws_uri).href;
 
 io.on('connection', socket => {
@@ -116,30 +117,15 @@ function joinRoom(socket, message, callback) {
             return;
         }
 
-        const playerTypes = ["awayplayer", "home"];
-        console.log(message.player)
-        if (!~playerTypes.findIndex((a) => a === message.player)) {
-            socket.emit('message', {
-                id: "error",
-                errorMessage: "Unrecognized player type" 
-            });
-            return
-        }
-
-        if (~Object.values(room.participants).findIndex((a) => a.player === message.player)) {
-            socket.emit('message', {
-                id: "error",
-                errorMessage: message.player + " already here" 
-            });
-            return
-        }
-
-        if (~Object.values(room.participants).findIndex((a) => a.name === message.name)) {
-            socket.emit('message', {
-                id: "error",
-                errorMessage: message.name + " already here" 
-            });
-            return
+        if (message.participantType === "player") {
+            let error = checkJoinIntent(room, message);
+            if (error) {
+                socket.emit('message', {
+                    id: "error",
+                    errorMessage: error 
+                });
+                return
+            }
         }
 
         // join user to room
@@ -152,6 +138,23 @@ function joinRoom(socket, message, callback) {
             callback();
         });
     });
+}
+
+function checkJoinIntent(room, message) {
+    const playerTypes = ["awayplayer", "home"];
+    if (!~playerTypes.findIndex((a) => a === message.player)) {
+        return "Unrecognized player type" 
+    }
+
+    if (~Object.values(room.participants).findIndex((a) => a.player === message.player)) {
+        return message.player + " already here" 
+    }
+
+    if (~Object.values(room.participants).findIndex((a) => a.name === message.name)) {
+        return message.name + " already here" 
+    }
+
+    return false;
 }
 
 /**
@@ -262,8 +265,6 @@ function join(socket, room, userName, participantType, player, callback) {
                 });
             }
         }
-
-        console.log(usersInRoom);
 
         // send list of current user in the room to current participant
         let existingUsers = [];
@@ -506,14 +507,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get('/game/spectator/:gameId', function(req, res) {
     res.cookie("gameId", req.params.gameId);
     res.cookie("participantType", "spectator");
-    res.sendFile(path.join(_public, 'index.html'));
+    res.sendFile(path.join(_public, 'spectator.html'));
 });
 app.get('/game/player/:gameId', function(req, res) {
     res.cookie("gameId", req.params.gameId);
     res.cookie("player", req.query.player);
     res.cookie("playerName", req.query.playername);
     res.cookie("participantType", "player");
-    res.sendFile(path.join(_public, 'index.html'));
+    res.sendFile(path.join(_public, 'player.html'));
 });
 
 app.use(express.static(_public));

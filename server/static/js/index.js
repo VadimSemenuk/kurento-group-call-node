@@ -104,6 +104,7 @@ function callResponse(message) {
 
 function onExistingParticipants(msg) {
 	console.log("onExistingParticipants", msg);
+	document.getElementById("current-participiant-name").innerText = participantName;
 
 	if (participantType === "spectator") {
 		msg.data.filter((a) => a.participantType === "player").forEach(receiveVideo);

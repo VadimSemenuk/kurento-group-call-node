@@ -13,6 +13,7 @@
 	<div id="container">
 		<div id="wrapper">
 			<div id="room">
+				<h1>Participant <span id="current-participiant-name"></span></h1>
 				<h2 id="room-header"></h2>
 				<div id="participants">
 					<div id="participant-home"></div>
@@ -27,23 +28,7 @@
 	<script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
     <script src="/bower_components/adapter.js/adapter.js"></script>
     <script src="/bower_components/kurento-utils/js/kurento-utils.min.js"></script>
-	<script>
-		function getCookie(name) {
-			var matches = document.cookie.match(new RegExp(
-				"(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-			));
-			return matches ? decodeURIComponent(matches[1]) : undefined;
-		}
-
-		function guid() {
-			function s4() {
-				return Math.floor((1 + Math.random()) * 0x10000)
-				.toString(16)
-				.substring(1);
-			}
-			return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-		}
-	</script>
+	<script src="/js/utils.js"></script>
 	<script src="/js/index.js"></script>
 	<script src="/js/participants.js"></script>
     

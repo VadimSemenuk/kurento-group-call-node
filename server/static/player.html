@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Kurento Group Call Node</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 
 <body>
@@ -16,18 +16,22 @@
             <div id="room">
                 <h1>Player <span id="current-participiant-name"></span></h1>
                 <h2 id="room-header"></h2>
-                <div id="participants"></div>
+				<div id="participants">
+                    <div id="participant-home"></div>
+                    <div id="participant-awayplayer"></div>
+                </div>
                 <input type="button" id="button-leave" onmouseup="leaveRoom();" value="Leave room">
             </div>
         </div>
     </div>
 
     <script> window.participantType = "player" </script>
-    <script src="./bower_components/socket.io-client/dist/socket.io.js"></script>
-    <script src="./bower_components/adapter.js/adapter.js"></script>
-    <script src="./bower_components/kurento-utils/js/kurento-utils.min.js"></script>
-    <script src="./js/index.js"></script>
-    <script src="./js/participants.js"></script>
+    <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
+    <script src="/bower_components/adapter.js/adapter.js"></script>
+    <script src="/bower_components/kurento-utils/js/kurento-utils.min.js"></script>
+	<script src="/js/utils.js"></script>
+    <script src="/js/index.js"></script>
+    <script src="/js/participants.js"></script>
 
 
 </body>
