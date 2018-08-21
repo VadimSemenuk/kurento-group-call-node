@@ -60,6 +60,11 @@ io.on('connection', socket => {
 
     socket.on('disconnect', data => {
         console.log(`Connection : %s disconnect`, data);
+        leaveRoom(socket, (error) => {
+            if (error) {
+                console.error(error);
+            }
+        });
     });
 
     socket.on('message', message => {
@@ -141,12 +146,15 @@ function joinRoom(socket, message, callback) {
 }
 
 function checkJoinIntent(room, message) {
+    console.log(room);
+    var roomPlayerParticipants = Object.values(room.participants).filter((a) => a.participantType === "player");
+
     const playerTypes = ["awayplayer", "home"];
     if (!~playerTypes.findIndex((a) => a === message.player)) {
         return "Unrecognized player type" 
     }
 
-    if (~Object.values(room.participants).findIndex((a) => a.player === message.player)) {
+    if (~roomPlayerParticipants.findIndex((a) => a.player === message.player)) {
         return message.player + " already here" 
     }
 
@@ -341,7 +349,7 @@ function leaveRoom(socket, callback) {
     if (!userSession) {
         return;
     }
-
+    // || userSession.participantType === "spectator"
     var room = rooms[userSession.roomName];
 
     if(!room){
@@ -351,11 +359,11 @@ function leaveRoom(socket, callback) {
     console.log('notify all user that ' + userSession.name + ' is leaving the room ' + room.name);
     var usersInRoom = room.participants;
     delete usersInRoom[userSession.name];
-    userSession.outgoingMedia.release();
+    userSession.outgoingMedia && userSession.outgoingMedia.release();
     
     // release incoming media for the leaving user
     for (var i in userSession.incomingMedia) {
-        userSession.incomingMedia[i].release();
+        userSession.incomingMedia[i] && userSession.incomingMedia[i].release();
         delete userSession.incomingMedia[i];
     }
 
@@ -366,7 +374,7 @@ function leaveRoom(socket, callback) {
     for (var i in usersInRoom) {
         var user = usersInRoom[i];
         // release viewer from this
-        user.incomingMedia[userSession.name].release();
+        user.incomingMedia[userSession.name] && user.incomingMedia[userSession.name].release();
         delete user.incomingMedia[userSession.name];
 
         // notify all user in the room
@@ -507,6 +515,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get('/game/spectator/:gameId', function(req, res) {
     res.cookie("gameId", req.params.gameId);
     res.cookie("participantType", "spectator");
+    res.cookie("player", null);
     res.sendFile(path.join(_public, 'spectator.html'));
 });
 app.get('/game/player/:gameId', function(req, res) {
