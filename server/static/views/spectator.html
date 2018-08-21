@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Kurento Group Call Node</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+    <div id="container">
+        <div id="wrapper">
+            <div id="room">
+                <h1>Spectator <span id="current-participiant-name"></span></h1>
+                <h2 id="room-header"></h2>
+                <div id="participants"></div>
+                <input type="button" id="button-leave" onmouseup="leaveRoom();" value="Leave room">
+            </div>
+        </div>
+    </div>
+
+    <script> window.participantType = "spectator" </script>
+    <script src="./bower_components/socket.io-client/dist/socket.io.js"></script>
+    <script src="./bower_components/adapter.js/adapter.js"></script>
+    <script src="./bower_components/kurento-utils/js/kurento-utils.min.js"></script>
+    <script src="./js/index.js"></script>
+    <script src="./js/participants.js"></script>
+
+
+</body>
+
+</html>

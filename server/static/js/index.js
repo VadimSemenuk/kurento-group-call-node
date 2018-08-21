@@ -15,11 +15,12 @@
  *
  */
 
-var socket = io('http://' + location.host);
+var socket = io('https://' + location.host);
 var participants = {};
 var name;
+var isSpectator;
 
-window.onbeforeunload = function() {
+window.onbeforeunload = function () {
 	socket.disconnect();
 };
 
@@ -31,28 +32,28 @@ socket.on('message', parsedMessage => {
 	console.info('Received message: ' + parsedMessage.id);
 
 	switch (parsedMessage.id) {
-	case 'existingParticipants':
-		onExistingParticipants(parsedMessage);
-		break;
-	case 'newParticipantArrived':
-		onNewParticipant(parsedMessage);
-		break;
-	case 'participantLeft':
-		onParticipantLeft(parsedMessage);
-		break;
-	case 'receiveVideoAnswer':
-		receiveVideoResponse(parsedMessage);
-		break;
-	case 'iceCandidate':
-		participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function(error) {
-	        if (error) {
-		      console.error("Error adding candidate: " + error);
-		      return;
-	        }
-	    });
-	    break;
-	default:
-		console.error('Unrecognized message', parsedMessage);
+		case 'existingParticipants':
+			onExistingParticipants(parsedMessage);
+			break;
+		case 'newParticipantArrived':
+			onNewParticipant(parsedMessage);
+			break;
+		case 'participantLeft':
+			onParticipantLeft(parsedMessage);
+			break;
+		case 'receiveVideoAnswer':
+			receiveVideoResponse(parsedMessage);
+			break;
+		case 'iceCandidate':
+			participants[parsedMessage.name].rtcPeer.addIceCandidate(parsedMessage.candidate, function (error) {
+				if (error) {
+					console.error("Error adding candidate: " + error);
+					return;
+				}
+			});
+			break;
+		default:
+			console.error('Unrecognized message', parsedMessage);
 	}
 });
 
@@ -60,25 +61,36 @@ function register() {
 	name = document.getElementById('name').value;
 	var roomName = document.getElementById('roomName').value;
 
+	isSpectator = false;
+	if (document.getElementById('isSpectator').checked) {
+		isSpectator = true;
+	}
+	console.log("isSpectator", isSpectator)
+
 	document.getElementById('room-header').innerText = 'ROOM ' + roomName;
 	document.getElementById('join').style.display = 'none';
 	document.getElementById('room').style.display = 'block';
 
 	var message = {
-		id : 'joinRoom',
-		name : name,
-		roomName : roomName,
+		id: 'joinRoom',
+		name: name,
+		roomName: roomName,
+		isSpectator: isSpectator,
 	}
 	sendMessage(message);
 }
 
 function onNewParticipant(request) {
-	receiveVideo(request.name);
+	if (request.isSpectator) {
+		alert("new spectator arrived");
+	} else {
+		receiveVideo(request.name);
+	}
 }
 
 function receiveVideoResponse(result) {
-	participants[result.name].rtcPeer.processAnswer (result.sdpAnswer, function (error) {
-		if (error) return console.error (error);
+	participants[result.name].rtcPeer.processAnswer(result.sdpAnswer, function (error) {
+		if (error) return console.error(error);
 	});
 }
 
@@ -88,19 +100,24 @@ function callResponse(message) {
 		stop();
 	} else {
 		webRtcPeer.processAnswer(message.sdpAnswer, function (error) {
-			if (error) return console.error (error);
+			if (error) return console.error(error);
 		});
 	}
 }
 
 function onExistingParticipants(msg) {
+	if (isSpectator) {
+		msg.data.forEach(receiveVideo);
+		return
+	}
+
 	var constraints = {
-		audio : true,
-		video : {
-			mandatory : {
-				maxWidth : 320,
-				maxFrameRate : 15,
-				minFrameRate : 15
+		audio: true,
+		video: {
+			mandatory: {
+				maxWidth: 320,
+				maxFrameRate: 15,
+				minFrameRate: 15
 			}
 		}
 	};
@@ -110,17 +127,30 @@ function onExistingParticipants(msg) {
 	var video = participant.getVideoElement();
 
 	var options = {
-	      localVideo: video,
-	      mediaConstraints: constraints,
-	      onicecandidate: participant.onIceCandidate.bind(participant)
+		localVideo: video,
+		mediaConstraints: constraints,
+		onicecandidate: participant.onIceCandidate.bind(participant)
 	}
-	participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
-		function (error) {
-		  if(error) {
-			  return console.error(error);
-		  }
-		  this.generateOffer(participant.offerToReceiveVideo.bind(participant));
-	});
+	// if (isSpectator) {
+		// participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
+		// 	function (error) {
+		// 		if (error) {
+		// 			return console.error(error);
+		// 		}
+		// 		this.generateOffer(participant.offerToReceiveVideo.bind(participant));
+		// 	});
+
+	// } else {
+		participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
+			function (error) {
+				if (error) {
+					return console.error(error);
+				}
+				this.generateOffer(participant.offerToReceiveVideo.bind(participant));
+			});
+	// }
+
+	console.log(msg);
 
 	msg.data.forEach(receiveVideo);
 }
@@ -146,13 +176,13 @@ function receiveVideo(sender) {
 	var video = participant.getVideoElement();
 
 	var options = {
-      remoteVideo: video,
-      onicecandidate: participant.onIceCandidate.bind(participant)
-    }
+		remoteVideo: video,
+		onicecandidate: participant.onIceCandidate.bind(participant)
+	}
 
 	participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,
 		function (error) {
-			if(error) {
+			if (error) {
 				return console.error(error);
 			}
 			this.generateOffer(participant.offerToReceiveVideo.bind(participant));

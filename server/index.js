@@ -21,7 +21,7 @@ const argv = minimst(process.argv.slice(2), {
     default: {
         //as_uri: 'http://localhost:3000',
         as_uri: 'https://localhost:3000',
-        ws_uri: 'ws://54.223.104.239:8888/kurento'
+        ws_uri: 'ws://127.0.0.1:8888/kurento'
     }
 });
 
@@ -116,7 +116,7 @@ function joinRoom(socket, message, callback) {
             return;
         }
         // join user to room
-        join(socket, room, message.name, (err, user) => {
+        join(socket, room, message.name, message.isSpectator, (err, user) => {
             console.log(`join success : ${user.name}`);
             if (err) {
                 callback(err);
@@ -173,10 +173,10 @@ function getRoom(roomName, callback) {
  * @param {*} userName 
  * @param {*} callback 
  */
-function join(socket, room, userName, callback) {
+function join(socket, room, userName, isSpectator, callback) {
 
     // add user to session
-    let userSession = new Session(socket, userName, room.name);
+    let userSession = new Session(socket, userName, room.name, isSpectator);
 
     // register
     userRegister.register(userSession);
@@ -229,11 +229,13 @@ function join(socket, room, userName, callback) {
             if (usersInRoom[i].name != userSession.name) {
                 usersInRoom[i].sendMessage({
                     id: 'newParticipantArrived',
-                    name: userSession.name
+                    name: userSession.name,
+                    isSpectator: userSession.isSpectator
                 });
             }
         }
 
+        console.log(usersInRoom);
 
         // send list of current user in the room to current participant
         let existingUsers = [];
@@ -465,4 +467,4 @@ function getEndpointForUser(userSession, sender, callback) {
 }
 
 
-app.use(express.static(path.join(__dirname, 'static')));
+app.use("/game/spectator", express.static(path.join(__dirname, 'static')));

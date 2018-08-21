@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceRoot}/index.js",
+            "runtimeExecutable": "/home/user06/.nvm/versions/node/v8.9.1/bin/node"
+        }
+    ]
+}
