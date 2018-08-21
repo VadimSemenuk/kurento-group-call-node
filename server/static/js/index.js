@@ -15,7 +15,8 @@
  *
  */
 
-var socket = io('https://' + location.host);
+// var socket = io('https://' + location.host);
+var socket = io('http://' + location.host);
 var participants = {};
 
 var gameId = getCookie("gameId");

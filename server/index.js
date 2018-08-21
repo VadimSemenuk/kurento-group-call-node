@@ -19,8 +19,8 @@ let rooms = {};
 
 const argv = minimst(process.argv.slice(2), {
     default: {
-        //as_uri: 'http://localhost:3000',
-        as_uri: 'https://localhost:3000',
+        as_uri: 'http://localhost:3009',
+        // as_uri: 'https://localhost:3000',
         ws_uri: 'ws://127.0.0.1:8888/kurento'
     }
 });
@@ -36,14 +36,14 @@ let app = express();
 
 let asUrl = url.parse(argv.as_uri);
 let port = asUrl.port;
-let server = https.createServer(options, app).listen(port, () => {
-    console.log('Kurento Group Call started');
-    console.log('Open %s with a WebRTC capable brower.', url.format(asUrl));
-});
-
-// let server = http.createServer(app).listen(port, () => {
-//      console.log('Kurento Group Call started');
+// let server = https.createServer(options, app).listen(port, () => {
+//     console.log('Kurento Group Call started');
+//     console.log('Open %s with a WebRTC capable brower.', url.format(asUrl));
 // });
+
+let server = http.createServer(app).listen(port, () => {
+     console.log('Kurento Group Call started');
+});
 
 /////////////////////////// websocket ///////////////////////////////
 
