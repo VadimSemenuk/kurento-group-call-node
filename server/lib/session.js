@@ -3,7 +3,7 @@
 /**
  *  User session 
  */
-export default class Session {
+class Session {
 
     /**
      * constructor method
@@ -96,3 +96,5 @@ export default class Session {
     }
 
 }
+
+module.exports = Session;

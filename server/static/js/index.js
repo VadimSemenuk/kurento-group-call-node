@@ -16,7 +16,7 @@
  */
 
 // var socket = io('https://' + location.host);
-var socket = io('http://' + location.host);
+var socket = io('https://' + location.host);
 var participants = {};
 
 var gameId = getCookie("gameId");
@@ -130,7 +130,10 @@ function onExistingParticipants(msg) {
 	var options = {
 		localVideo: video,
 		mediaConstraints: constraints,
-		onicecandidate: participant.onIceCandidate.bind(participant)
+		onicecandidate: participant.onIceCandidate.bind(participant),
+		configuration: {
+			iceServers: [{"urls":"turn:165.227.158.245:3478","username":"user","credential":"password"}] 
+		}
 	}
 
 	participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendonly(options,
@@ -168,7 +171,10 @@ function receiveVideo(sender) {
 
 	var options = {
 		remoteVideo: video,
-		onicecandidate: participant.onIceCandidate.bind(participant)
+		onicecandidate: participant.onIceCandidate.bind(participant),
+		configuration: {
+			iceServers: [{"urls":"turn:165.227.158.245:3478","username":"user","credential":"password"}] 
+		}
 	}
 
 	participant.rtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerRecvonly(options,

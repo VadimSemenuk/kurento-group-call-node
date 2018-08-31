@@ -1,16 +1,16 @@
+const path = require('path');
+const url = require('url');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
 
-import path from 'path';
-import url from 'url';
-import https from 'https';
-import http from 'http';
-import fs from 'fs'; 
+const express = require('express');
+const kurento = require('kurento-client');
+const socketIO = require('socket.io');
+const minimst = require('minimist');
 
-import express from 'express';
-import kurento from 'kurento-client';
-import socketIO from 'socket.io';
-import minimst from 'minimist';
-
-import { Session, Register } from './lib';
+const Register = require('./lib/register.js');
+const Session = require('./lib/session.js');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -19,7 +19,7 @@ let rooms = {};
 
 const argv = minimst(process.argv.slice(2), {
     default: {
-        as_uri: 'http://localhost:3009',
+        as_uri: 'https://localhost:3009',
         // as_uri: 'https://localhost:3000',
         ws_uri: 'ws://127.0.0.1:8888/kurento'
     }
@@ -28,26 +28,28 @@ const argv = minimst(process.argv.slice(2), {
 
 /////////////////////////// https ///////////////////////////////
 const options = {
-    key: fs.readFileSync('./server/keys/server.key'),
-    cert: fs.readFileSync('./server/keys/server.crt')
+    // key: fs.readFileSync('./server/keys/server.key'),
+    // cert: fs.readFileSync('./server/keys/server.crt')
+    key: fs.readFileSync('./server/keys/privkey.pem'),
+    cert: fs.readFileSync('./server/keys/fullchain.pem')
 };
 
 let app = express();
 
 let asUrl = url.parse(argv.as_uri);
 let port = asUrl.port;
-// let server = https.createServer(options, app).listen(port, () => {
-//     console.log('Kurento Group Call started');
-//     console.log('Open %s with a WebRTC capable brower.', url.format(asUrl));
-// });
-
-let server = http.createServer(app).listen(port, () => {
-     console.log('Kurento Group Call started');
+let server = https.createServer(options, app).listen(port, () => {
+    console.log('Kurento Group Call started');
+    console.log('Open %s with a WebRTC capable brower.', url.format(asUrl));
 });
+
+// let server = http.createServer(app).listen(port, () => {
+//      console.log('Kurento Group Call started');
+// });
 
 /////////////////////////// websocket ///////////////////////////////
 
-let io = socketIO(server);
+let io = socketIO(server).path('/');
 // let io = socketIO(server).path('/groupcall');
 let wsUrl = url.parse(argv.ws_uri).href;
 

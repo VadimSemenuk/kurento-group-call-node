@@ -3,7 +3,7 @@
 /**
  * 
  */
-export default class Register {
+class Register {
 
     /**
      * 
@@ -59,3 +59,5 @@ export default class Register {
         return this.userSessionIds[id];
     }
 }
+
+module.exports = Register;
